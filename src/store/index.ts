@@ -6,19 +6,19 @@ import { appService } from '@/utils/app';
 const user = appService.getUser<IUser>();
 
 export default createStore({
-    state: {
-        loginUser: user,
+  state: {
+    loginUser: user,
+  },
+  mutations: {
+    setLoginUser: (state, payload: IUser) => {
+      state.loginUser = payload;
     },
-    mutations: {
-        setLoginUser: (state, payload: IUser) => {
-            state.loginUser = payload;
-        },
+  },
+  actions: {
+    setLoginUser: (context, payload: IUser) => {
+      context.commit('setLoginUser', payload);
     },
-    actions: {
-        setLoginUser: (context, payload: IUser) => {
-            context.commit('setLoginUser', payload);
-        },
-    },
-    modules: {},
-    plugins: process.env.mode === 'debug' ? [createLogger()] : [],
+  },
+  modules: {},
+  plugins: process.env.mode === 'debug' ? [createLogger()] : [],
 });

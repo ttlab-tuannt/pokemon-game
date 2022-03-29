@@ -6,6 +6,6 @@ import ElementUI from './element-ui';
 import '@fortawesome/fontawesome-free/css/all.min.css';
 
 export default {
-    i18n,
-    ElementUI,
+  i18n,
+  ElementUI,
 };

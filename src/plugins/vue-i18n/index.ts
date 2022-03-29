@@ -5,9 +5,9 @@ import { appService } from '@/utils/app';
 const localeModules = getLocaleFromModules();
 
 const i18n = createI18n({
-    locale: appService.currentAppLang, // set locale
-    fallbackLocale: 'en', // set fallback locale
-    messages: localeModules, // set locale messages
+  locale: appService.currentAppLang, // set locale
+  fallbackLocale: 'en', // set fallback locale
+  messages: localeModules, // set locale messages
 });
 
 export default i18n;
