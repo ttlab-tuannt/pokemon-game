@@ -1,0 +1,9 @@
+@import './var.scss';
+
+@include b(dropdown-menu) {
+  @include e(item) {
+    &:not(.is-disabled):hover, &:focus {
+      color: $--color-text-regular;
+    }
+  }
+}

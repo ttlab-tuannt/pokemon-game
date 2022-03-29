@@ -1,0 +1,21 @@
+@import '../var.scss';
+
+@mixin button-plain($color) {
+    color: $color;
+    background: $--color-white;
+    border-color: mix($--color-white, $color, 60%);
+
+}
+
+@mixin button-variant($color, $background-color, $border-color) {
+    &:hover,
+    &:focus {
+        background: $background-color;
+        border-color: $border-color;
+        color: $color;
+    }
+
+    &.is-plain {
+      @include button-plain($background-color);
+    }
+}

@@ -1,0 +1,15 @@
+.el-dialog{
+  border-radius: 12px;
+  overflow: auto !important;
+  @media only screen and (max-width: 576px) {
+    width: 90% !important;
+  }
+  @media only screen and (min-width: 576px) {
+    margin-top: 12vh !important;
+    max-height: 80vh;
+    overflow: auto;
+  }
+  .el-dialog__body {
+    padding: 20px;
+  }
+}

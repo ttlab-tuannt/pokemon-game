@@ -1,0 +1,39 @@
+@import "./mixins/button";
+
+@include b(button) {
+
+    &:hover,
+    &:focus {
+        color: $--color-primary;
+        border-color: $--color-primary;
+        background-color: $--color-white;
+    }
+
+    @include m(primary) {
+        @include button-variant($--button-primary-font-color, $--button-primary-background-color, $--button-primary-border-color);
+    }
+    @include m(success) {
+        @include button-variant($--button-success-font-color, $--button-success-background-color, $--button-success-border-color);
+    }
+    @include m(warning) {
+        @include button-variant($--button-warning-font-color, $--button-warning-background-color, $--button-warning-border-color);
+    }
+    @include m(danger) {
+        @include button-variant($--button-danger-font-color, $--button-danger-background-color, $--button-danger-border-color);
+    }
+    @include m(info) {
+        @include button-variant($--button-info-font-color, $--button-info-background-color, $--button-info-border-color);
+    }
+}
+// style group button for popup
+.group-button {
+    display: flex;
+    flex-wrap: wrap;
+    .group-button-left {
+        margin-right: auto;
+        padding-bottom: 10px;
+    }
+    .group-button-right {
+        padding-bottom: 10px;
+    }
+}

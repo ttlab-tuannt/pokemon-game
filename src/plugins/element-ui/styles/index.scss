@@ -1,0 +1,8 @@
+@import './var.scss';
+$--font-path: '~element-plus/lib/theme-chalk/fonts';
+@import "~element-plus/packages/theme-chalk/src/index";
+
+@import './button.scss';
+@import './table.scss';
+@import './dialog.scss';
+@import './dropdown.scss';

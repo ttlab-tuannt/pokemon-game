@@ -1,0 +1,51 @@
+@import './var.scss';
+
+@include b(table) {
+    table {
+        background-color: #FAFAFA;
+    }
+    thead {
+        background-color: #F5F5F5;
+        color: $--color-text-regular;
+        tr, th {
+            background-color: transparent;
+        }
+        th {
+            padding: 0;
+            height: 40px;
+        }
+        th:first-child{
+            .cell{
+                padding-left: 20px;
+            }
+        }
+    }
+
+    tbody {
+        tr {
+            background-color: transparent;
+        }
+        td {
+            padding: 0;
+            height: 43px;
+        }
+        td:first-child{
+            .cell{
+                padding-left: 20px;
+            }
+        }
+    }
+
+    @include e(body) {
+        tr.hover-row {
+            box-shadow: 0px 0px 8px #e0e0e0;
+            &, &.#{$namespace}-table__row--striped {
+                &, &.current-row {
+                    > td {
+                        background-color: $--color-white;
+                    }
+                }
+            }
+        }
+    }
+}
