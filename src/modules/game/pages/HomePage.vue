@@ -4,172 +4,144 @@
     <h2>Game level: {{ level }}</h2>
     <h2>Count down: {{ time }}</h2>
     <h2>Score: {{ score }}</h2>
-    <div class="alert d-none">
-      <h1>You Win!!</h1>
-    </div>
-    <div class="game-content">
-      <div class="pokemon-col" v-for="(items, col) in images" :key="col">
-        <div class="pokemon-row" v-for="(item, row) in items" :key="row">
-          <div
-            class="pokemon-item"
-            :style="{ backgroundColor: randomColor }"
-            @click="selectAction($event)"
-            :id="item.name"
-          >
-            <img :src="item.icon" />
+    <el-button @click="playGame" v-if="!isPlayGame">Play game</el-button>
+    <el-button @click="stopGame" v-else>Stop game</el-button>
+    <div class="game-container">
+      <div class="game-content">
+        <div :class="{ 'disable-game': !isPlayGame }"></div>
+        <div class="pokemon-row" v-for="(items, col) in images" :key="col">
+          <div class="pokemon-col" v-for="(item, row) in items" :key="row">
+            <div
+              class="pokemon-item"
+              :class="{ active: hasActive(item) }"
+              @click="selectPokemon(item)"
+            >
+              <img :src="item.icon" :class="{ 'd-none': isRemove(item) }" />
+            </div>
           </div>
         </div>
       </div>
     </div>
+    <div class="animation" ref="animation"></div>
   </div>
 </template>
 
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component';
 import icons from '../icons';
-import GameBoard, { GameSize } from '../models/game-board';
+import GameBoard from '../models/game-board';
 import Pokemon from '../models/pokemon';
 import _ from 'lodash';
+import lottie from 'lottie-web';
 
 const pokemonList: Pokemon[] = [];
 _.forEach(icons, (item, key) => {
   pokemonList.push(new Pokemon({ name: key, icon: item }));
 });
 
-const gameBoard = new GameBoard(pokemonList);
-
-const audioElement = new Audio(require('@/assets/sounds/pop.mp3'));
+const gameBoard = new GameBoard({ pokemonList });
 
 @Options({})
 export default class HomePage extends Vue {
-  count = 0;
   started = false;
-  interval: any = null;
+  anim: any = null;
 
   get images() {
-    return this.game.makeTable();
+    return _.chunk(gameBoard.playItems.value, gameBoard.sizeOfLevel.row);
   }
 
   get score() {
-    return this.game.score.value;
-  }
-
-  get game() {
-    return gameBoard;
+    return gameBoard.score.value;
   }
 
   get level() {
-    return _.capitalize(this.game.level);
+    return _.capitalize(gameBoard.level);
   }
 
   get time() {
-    return this.game.time.value;
+    return gameBoard.time.value;
   }
 
-  changeTime() {
-    this.interval = setInterval(() => {
-      this.game.time.value = this.game.time.value - 1;
-      if (this.game.time.value === 0) {
-        clearInterval(this.interval);
-      }
-    }, 1000);
+  get selectedPokemon() {
+    return gameBoard.selectedPokemon?.value;
   }
 
-  get randomColor() {
-    let color = '#';
-    for (let i = 0; i < 3; i++)
-      color += (
-        '0' + Math.floor((Math.random() * Math.pow(16, 2)) / 2).toString(16)
-      ).slice(-2);
-    return color;
+  get isPlayGame() {
+    return gameBoard.isPlayGame.value;
   }
 
-  get audio() {
-    return audioElement;
+  selectPokemon(pokemon: Pokemon) {
+    gameBoard.onSelectPokemon(pokemon);
   }
 
-  onWinGame() {
-    clearInterval(this.interval);
-    var audio = new Audio(require('@/assets/sounds/win.mp3'));
-    audio.play();
+  hasActive(pokemon: Pokemon): boolean {
+    return (
+      pokemon.name === gameBoard.selectedPokemon?.value?.name ||
+      pokemon.name === gameBoard.comparePokemon?.value?.name
+    );
   }
 
-  selectAction(event: any) {
-    var { target } = event;
-    this.audio.play();
+  isRemove(pokemon: Pokemon): boolean {
+    return gameBoard.isPokemonRemoved(pokemon);
+  }
 
-    if (this.started === false) {
-      this.started = true;
-      this.changeTime();
-    }
+  playGame() {
+    gameBoard.playGame();
+  }
 
-    if (target.localName === 'img') {
-      target = target.parentElement;
-    }
-    if (target.classList.contains('pokemon-selected')) {
-      target.classList.remove('pokemon-selected');
-    } else {
-      target.classList.add('pokemon-selected');
-      var result = this.game.onSelectPokemon(
-        new Pokemon({ name: target.id, icon: target.childNodes[0].src }),
-      );
-      if (result === false) return;
-      if (result === null) {
-        document.querySelectorAll('.pokemon-selected').forEach((item) => {
-          item.classList.remove('pokemon-selected');
-        });
-        return;
-      }
-      if (result === true) {
-        _.map(document.querySelectorAll('.pokemon-selected'), (item) => {
-          item.classList.remove('pokemon-selected');
-          item.classList.add('d-none', 'bg-white');
-        });
-        const totalSquare = GameSize[this.game.level].col * GameSize[this.game.level].row;
-        if (this.game.score.value === totalSquare / 2) {
-          this.onWinGame();
-        }
-      }
-    }
+  stopGame() {
+    gameBoard.stopGame();
+  }
+
+  mounted() {
+    console.log('mounted');
+
+    this.anim = lottie.loadAnimation({
+      container: this.$refs.animation as any,
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: './fireworks.json',
+    });
   }
 }
 </script>
 
-<style>
+<style lang="scss">
 .game-content {
-  margin-top: 20px;
-  text-align: center;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
+  margin: 0 auto;
+  position: relative;
 }
 .pokemon-row {
-  height: 80px;
-  border: 1px solid #ccc;
+  display: flex;
 }
-.pokemon-col {
-  width: 80px;
+
+.game-container {
+  display: flex;
 }
+
 .pokemon-item {
-  width: 80px;
   height: 80px;
+  width: 80px;
   display: flex;
   justify-content: center;
   align-items: center;
+  border: solid 1px #ccc;
+  img {
+    width: 50px;
+    height: 50px;
+  }
 }
 
-.pokemon-item:hover > img {
-  cursor: pointer;
-  width: 50px;
+.pokemon-item {
+  :hover {
+    cursor: pointer;
+  }
 }
 
-.pokemon-selected,
-.pokemon-item:active {
-  border: 4px solid #fbff91;
-}
-
-.d-none {
-  display: none;
+.active {
+  border-color: aquamarine;
+  background-color: yellow;
 }
 
 .bg-white {
@@ -180,5 +152,18 @@ export default class HomePage extends Vue {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.disable-game {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.animation {
+  height: 400px;
+  width: 400px;
 }
 </style>

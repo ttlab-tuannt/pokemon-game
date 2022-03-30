@@ -35,19 +35,34 @@ export default class GameBoard {
   level: GameLevel = GameLevel.easy;
   time = ref(LimitTime[GameLevel.easy]);
   pokemonList: Pokemon[] = [];
-  selectedPokemon: Pokemon | null = null;
-  comparePokemon: Pokemon | null = null;
+  selectedPokemon = ref<Pokemon | null>(null);
+  comparePokemon = ref<Pokemon | null>(null);
+  playItems = ref<Pokemon[]>([]);
+  removeList = ref<Pokemon[]>([]);
+  interval: NodeJS.Timeout | null = null;
+  isPlayGame = ref(false);
+  choiceSound: HTMLAudioElement | null = null;
+  correctSound: HTMLAudioElement | null = null;
+  failSound: HTMLAudioElement | null = null;
 
-  constructor(pokemonList: Pokemon[]) {
-    this.pokemonList = pokemonList;
+  constructor(options: { pokemonList: Pokemon[] }) {
+    this.pokemonList = options.pokemonList;
+    this.setup();
+  }
+
+  setup() {
+    this.init();
+    this.initSound();
   }
 
   get isEmptyPokemonSelect(): boolean {
-    return this.selectedPokemon !== null;
+    return this.selectedPokemon.value === null;
   }
 
   get isSamePokemon(): boolean {
-    return this.selectedPokemon?.name === this.comparePokemon?.name;
+    const select = (this.selectedPokemon?.value?.name || '').replace('copy', '');
+    const compare = (this.comparePokemon?.value?.name || '').replace('copy', '');
+    return select === compare;
   }
 
   updateScore(score: number): void {
@@ -55,54 +70,66 @@ export default class GameBoard {
   }
 
   removeCouplePokemon(): void {
-    const sIndex = this.pokemonList.findIndex(
-      (item) => item.name === this.selectedPokemon?.name,
-    );
-    if (sIndex > -1) {
-      this.pokemonList.splice(sIndex, 1);
+    if (!this.selectedPokemon.value || !this.comparePokemon.value) {
+      return;
     }
-
-    const cIndex = this.pokemonList.findIndex(
-      (item) => item.name === this.comparePokemon?.name,
-    );
-    if (cIndex > -1) {
-      this.pokemonList.splice(cIndex, 1);
-    }
+    this.removeList.value.push({ ...this.selectedPokemon.value });
+    this.removeList.value.push({ ...this.comparePokemon.value });
   }
 
   clearSelectPokemon(): void {
-    this.selectedPokemon = null;
-    this.comparePokemon = null;
+    this.selectedPokemon.value = null;
+    this.comparePokemon.value = null;
   }
 
-  onSelectPokemon(pokemon: Pokemon): boolean | null {
-    if (!this.isEmptyPokemonSelect) {
-      this.selectedPokemon = pokemon;
-      return false;
+  isPokemonRemoved(pokemon: Pokemon): boolean {
+    const index = this.removeList?.value?.findIndex((item) => item.name === pokemon.name);
+    return index > -1;
+  }
+
+  onSelectPokemon(pokemon: Pokemon): void {
+    if (this.isPokemonRemoved(pokemon)) {
+      return;
     }
-    this.comparePokemon = pokemon;
+    if (this.choiceSound) {
+      this.choiceSound.play();
+    }
+    if (this.isEmptyPokemonSelect) {
+      this.selectedPokemon.value = pokemon;
+      return;
+    }
+    this.comparePokemon.value = pokemon;
+
     if (this.isSamePokemon) {
+      if (this.correctSound) {
+        this.correctSound.play();
+      }
       this.updateScore(1);
       this.removeCouplePokemon();
       this.clearSelectPokemon();
-      console.log(this.pokemonList);
-      return true;
+      return;
     }
-
+    if (this.failSound) {
+      this.failSound.play();
+    }
     this.clearSelectPokemon();
-    return null;
   }
 
   shufflePokemon(items: Pokemon[]) {
     const tmp = [...items];
     for (let index = 0; index < items.length; index++) {
-      tmp.push(items[index]);
+      const cpItem = { ...items[index], name: items[index].name + 'copy' };
+      tmp.push(cpItem);
     }
 
     return _.shuffle(tmp);
   }
 
-  makeTable(): Pokemon[][] {
+  get sizeOfLevel() {
+    return GameSize[this.level];
+  }
+
+  init() {
     const size = GameSize[this.level];
     const total = size.col * size.row;
     const count = total / 2;
@@ -114,7 +141,28 @@ export default class GameBoard {
     for (let index = 0; index < end; index++) {
       icons.push(this.pokemonList[index]);
     }
-    const tmp = this.shufflePokemon(icons);
-    return _.chunk(tmp, size.row);
+    this.playItems.value = this.shufflePokemon(icons);
+  }
+
+  playGame() {
+    if (!this.interval) {
+      this.interval = setInterval(() => {
+        this.time.value--;
+      }, 1000);
+      this.isPlayGame.value = true;
+    }
+  }
+
+  stopGame() {
+    this.isPlayGame.value = false;
+    if (this.interval) {
+      clearInterval(this.interval);
+    }
+  }
+
+  initSound() {
+    this.choiceSound = new Audio(require('@/assets/sounds/choice.mp3'));
+    this.failSound = new Audio(require('@/assets/sounds/fail.mp3'));
+    this.correctSound = new Audio(require('@/assets/sounds/correct.mp3'));
   }
 }
