@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import Pokemon from './pokemon';
+import { ref } from 'vue';
 
 export enum GameLevel {
   easy = 'easy',
@@ -30,9 +31,9 @@ export const LimitTime = {
 };
 
 export default class GameBoard {
-  score = 0;
+  score = ref(0);
   level: GameLevel = GameLevel.easy;
-  time = LimitTime[GameLevel.easy];
+  time = ref(LimitTime[GameLevel.easy]);
   pokemonList: Pokemon[] = [];
   selectedPokemon: Pokemon | null = null;
   comparePokemon: Pokemon | null = null;
@@ -50,7 +51,7 @@ export default class GameBoard {
   }
 
   updateScore(score: number): void {
-    this.score += score;
+    this.score.value += score;
   }
 
   removeCouplePokemon(): void {

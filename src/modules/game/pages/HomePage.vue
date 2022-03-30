@@ -3,6 +3,7 @@
     <h1>Pokemon Game</h1>
     <h2>Game level: {{ level }}</h2>
     <h2>Count down: {{ time }}</h2>
+    <button @click="changeTime">change time</button>
     <div class="game-content">
       <div class="pokemon-row" v-for="(items, row) in images" :key="row">
         <div class="pokemon-col" v-for="(item, col) in items" :key="col">
@@ -46,7 +47,11 @@ export default class HomePage extends Vue {
   }
 
   get time() {
-    return this.game.time;
+    return this.game.time.value;
+  }
+
+  changeTime() {
+    this.game.time.value = this.game.time.value - 1;
   }
 }
 </script>
