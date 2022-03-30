@@ -75,19 +75,22 @@ export default class GameBoard {
     this.comparePokemon = null;
   }
 
-  onSelectPokemon(pokemon: Pokemon): void {
-    if (this.isEmptyPokemonSelect) {
+  onSelectPokemon(pokemon: Pokemon): boolean | null {
+    if (!this.isEmptyPokemonSelect) {
       this.selectedPokemon = pokemon;
-      return;
+      return false;
     }
     this.comparePokemon = pokemon;
     if (this.isSamePokemon) {
       this.updateScore(1);
       this.removeCouplePokemon();
-      return;
+      this.clearSelectPokemon();
+      console.log(this.pokemonList);
+      return true;
     }
 
     this.clearSelectPokemon();
+    return null;
   }
 
   shufflePokemon(items: Pokemon[]) {
