@@ -8,6 +8,7 @@
     <el-button @click="stopGame" v-else>Stop game</el-button>
     <div class="game-container">
       <div class="game-content">
+        <div :class="{ 'd-none': !isWin }" class="animation" ref="animation"></div>
         <div :class="{ 'disable-game': !isPlayGame }"></div>
         <div class="pokemon-row" v-for="(items, col) in images" :key="col">
           <div class="pokemon-col" v-for="(item, row) in items" :key="row">
@@ -22,7 +23,6 @@
         </div>
       </div>
     </div>
-    <div class="animation" ref="animation"></div>
   </div>
 </template>
 
@@ -33,6 +33,7 @@ import GameBoard from '../models/game-board';
 import Pokemon from '../models/pokemon';
 import _ from 'lodash';
 import lottie from 'lottie-web';
+import jsonData from './fireworks.json';
 
 const pokemonList: Pokemon[] = [];
 _.forEach(icons, (item, key) => {
@@ -52,6 +53,10 @@ export default class HomePage extends Vue {
 
   get score() {
     return gameBoard.score.value;
+  }
+
+  get isWin() {
+    return gameBoard.removeList.value.length === gameBoard.playItems.value.length;
   }
 
   get level() {
@@ -101,7 +106,7 @@ export default class HomePage extends Vue {
       renderer: 'svg',
       loop: true,
       autoplay: true,
-      path: './fireworks.json',
+      animationData: jsonData,
     });
   }
 }
@@ -165,5 +170,6 @@ export default class HomePage extends Vue {
 .animation {
   height: 400px;
   width: 400px;
+  position: absolute;
 }
 </style>
